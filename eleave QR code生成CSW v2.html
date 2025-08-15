@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="60">  <!-- 每60秒自動刷新 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <title>考勤 QR Code 生成器</title>
+</head>
+
+<body>
+<center>
+    <!-- QR Code 顯示區域 -->
+    <div id="qrcode" style="width:150px; height:150px; cursor:pointer;"></div>
+    <div id="qrtime" style="font-size:8px">HQ01</div>
+</center>
+
+<script type="text/javascript">
+// 初始化 QR Code 生成器
+var qrcode = new QRCode(document.getElementById("qrcode"), {
+    width : 150,
+    height : 150
+});
+
+// 保存最後一次生成的 URL
+var lastUrl = "";
+
+function generateQRCode() {
+    // 獲取當前時間
+    var now = new Date();
+    
+    // 格式化時間組件
+    var ss = ("0" + now.getSeconds()).slice(-2);
+    var mm = ("0" + now.getMinutes()).slice(-2);
+    var hh = ("0" + now.getHours()).slice(-2);
+    var day = ("0" + now.getDate()).slice(-2);
+    var month = ("0" + (now.getMonth() + 1)).slice(-2);
+    
+    // 生成時間戳：YYMMDDHHMM + 位置代碼
+    var today = "" + 
+        (now.getFullYear()-2000) + 
+        month + 
+        day + 
+        hh + 
+        mm + 
+        "0305";
+    
+    // Base64 編碼時間戳
+    var encodedData = btoa(today);
+    
+    // 生成完整URL
+    var url = "https://feed.bgca.org.hk/mobile/hqattend.aspx?x=" + 
+              encodedData + 
+              "#stf_hqattend?" + 
+              today;
+    
+    // 記錄最新 URL 供點擊跳轉使用
+    lastUrl = url;
+
+    // 生成 QR Code
+    qrcode.makeCode(url);
+    
+    // 更新顯示的位置代碼
+    document.getElementById("qrtime").innerHTML = "0332";
+}
+
+// 初始生成
+generateQRCode();
+
+// 點擊 QR Code 自動跳轉
+document.getElementById("qrcode").addEventListener("click", function() {
+    if (lastUrl) {
+        window.location.href = lastUrl;
+    }
+});
+
+// 每分鐘更新一次（可選）
+setInterval(generateQRCode, 60000);
+</script>
+
+</body>
+</html>
